@@ -5,7 +5,7 @@ from threading import Lock
 import traceback
 from .job import Isolated
 
-def read_tokens(conn, n):
+def _read_tokens(conn, n):
     result = []
     s = b''
     x = n
@@ -19,7 +19,7 @@ def read_tokens(conn, n):
             s += c
     return result
 
-def read_bytes(conn, n):
+def _read_bytes(conn, n):
     result = b''
     while len(result) < n:
         result += conn.recv(1024)
@@ -28,6 +28,13 @@ def read_bytes(conn, n):
 class UpdateServer(Isolated):
 
     def __init__(self, sock_path='/tmp/uds_socket.s'):
+
+        """libnixcore Update Server 
+            This server handles these commands
+        
+            * 'Take Photo'
+            * responses cached image as png data
+        """
         super(UpdateServer, self).__init__()
         self.sock_path = sock_path
         env = 'CORE_COMMAND_SOCK'
@@ -60,8 +67,8 @@ class UpdateServer(Isolated):
                         break
             try:
                 conn, addr = s.accept()
-                [request_id, command_id, command_data_length] = map(int, read_tokens(conn, 3))
-                command_data = read_bytes(conn, command_data_length)
+                [request_id, command_id, command_data_length] = map(int, _read_tokens(conn, 3))
+                command_data = _read_bytes(conn, command_data_length)
                 if command_id == 0: # Take Photo
                     header = "data:image/png;base64,"
                     with self.img_lock:
