@@ -21,12 +21,14 @@ def notify(notification, *args, **kwargs):
         >>> libcore.notify([{'msg':'Hello'}])
         [{"msg":"Hello!"}]
     """
+    if type(notification) != list:
+        raise TypeError('must be a list of JSON encodable objects.')
     kwargs['flush'] = True
     print(json.dumps(notification), *args, **kwargs)
 
 _default_heartbeat_file = Path('/home/cybercore-pi/heartbeat')
 
-def _default_heartbeat():
+def _default_heartbeat(*args, **kwargs):
     _default_heartbeat_file.touch()
 
 _heartbeat_function = _default_heartbeat
@@ -49,11 +51,11 @@ def set_heartbeat_function(f):
     global _heartbeat_function
     _heartbeat_function = f
 
-def heartbeat():
+def heartbeat(*args, **kwargs):
     """
     Execute heartbeat action.
-    
+
     Notes:
         Defalut action is 'touch /home/cybercore-pi/heartbeat'
     """
-    _heartbeat_function() 
+    _heartbeat_function(*args, **kwargs) 
