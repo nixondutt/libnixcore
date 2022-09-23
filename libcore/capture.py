@@ -6,11 +6,21 @@ from libcore.v4l2.video import Video, V4L2_PIX_FMT, VideoPort
 
 class Frame(object):
 
+    """Captured Frame"""
+
     def __init__(self, value):
         self.value = value
         self.updatable = True
 
     def getvalue(self):
+
+        """
+        Get frame data.
+
+        Returns:
+            bytes: captured image data
+        """
+
         self.updatable = False
         return self.value
 
@@ -21,10 +31,26 @@ class Frame(object):
         return False
 
 class V4LCameraCapture(Producer):
+
+    """Captured Frame Producer for Video4Linux"""
+
     FormatSelector = enum.Enum("FormatSelector", "DEFAULT PROPER MAXIMUM")
     def __init__(self, device = '/dev/video0', size = (640, 480), framerate = 30,
                  expected_format = V4L2_PIX_FMT.RGB24, fallback_formats = (V4L2_PIX_FMT.YUYV,V4L2_PIX_FMT.MJPEG),
                  format_selector= FormatSelector.DEFAULT):
+
+        """
+        Args:
+            device (str): v4l device path
+            size (int, int): capture resolution
+            framerate (int): capture framerate
+            expected_format (:class:`~libcore.v4l2.video.V4L2_PIX_FMT`): expected capture format
+            fallback_formats (list of :class:`~llibcore.v4l2.video.V4L2_PIX_FMT`): fallback capture format
+        Notes:
+            If a camera doesn't support the expected_format,
+            try to capture one of the fallback_formats and convert it to expected_format.
+        """
+
         super(V4LCameraCapture, self).__init__()
         self.video = Video(device)
         width, height = size
@@ -84,6 +110,8 @@ class V4LCameraCapture(Producer):
 
     def run(self):
 
+        """Run producer activity"""
+
         with self.video.start_streaming() as stream:
             while self._is_running():
                 try:
@@ -100,6 +128,8 @@ class V4LCameraCapture(Producer):
                         self.frames.append(frame)
                 except:
                     raise
+                    
+        self.video.close()
 
     def _outlet(self, o):
         length = len(self.out_queues)

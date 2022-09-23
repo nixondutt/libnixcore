@@ -6,12 +6,7 @@ from .job import Job
 
 class Tube(Job):
 
-    """__init__(self)
-
-    Straightforward pipeline task.
-
-
-    """
+    """ Tube to thread """
 
     def __init__(self):
         super(Tube, self).__init__()
@@ -58,6 +53,9 @@ class Tube(Job):
         return False
 
     def run(self):
+
+        """Run activity"""
+
         for i in self._inlet():
             o = self.proc(i)
             self._outlet(o)
@@ -68,9 +66,20 @@ class Tube(Job):
         raise NotImplementedError("'proc' must be overridden.")
 
     def stop(self):
+
+        """Stop activity"""
+
         self.running = False
 
     def connect(self, follow):
+
+        """
+        Connect following task.
+        
+        Args:
+            follow (:class:`~libcore.job.job.Job`): following task
+        """
+
         q = Queue(1)
         follow._add_in_queue(q)
         self._add_out_queue(q)

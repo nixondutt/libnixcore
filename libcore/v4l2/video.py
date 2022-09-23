@@ -665,6 +665,7 @@ class Video(object):
     def set_rotation(self, rotation):
         """
         Rotate video if it supported.
+
         Args:
             rotation (int): video rotation (must be multiples of 90)
         Returns:
@@ -693,6 +694,7 @@ class Video(object):
     def set_horizontal_flip(self, flip):
         """
         Flip video (horizontal) if it supported.
+
         Args:
             flip (boolean): enable flip
         Returns:
@@ -726,6 +728,7 @@ class Video(object):
     def set_vertical_flip(self, flip):
         """
         Flip video (vertical) if it supported.
+        
         Args:
             flip (boolean): enable flip
         Returns:
@@ -759,6 +762,7 @@ class Video(object):
     def set_exposure_time(self, ms=None):
         """
         Set exposure time.
+
         Args:
             ms (int or None): exposure time [msec] (None means auto)
         Returns:

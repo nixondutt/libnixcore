@@ -166,6 +166,8 @@ class VC_DISPMANX_ALPHA_T(Structure):
 
 class Display(object):
 
+    """Display using VideoCore4 dispmanx"""
+
     def __init__(self, display_num = 0):
         self.display_num = display_num
         _bcm_host.init()
@@ -174,6 +176,14 @@ class Display(object):
         self.get_info()
 
     def get_info(self):
+
+        """
+        Get display information
+
+        Returns:
+            :class:`~libcore.vc4.display.DISPMANX_T`: display information
+        """
+
         self.info = DISPMANX_MODEINFO_T()
         result = _bcm_host.vc_dispmanx_display_get_info(self.handle, byref(self.info));
         if result != 0:
@@ -182,9 +192,29 @@ class Display(object):
         return self.info
 
     def open_window(self, dst, size, layer):
+
+        """
+        Open new window.
+        
+        Args:
+            dst((int,int,int,int)): destination rectangle (left, top, width, height)
+            size((int, int)): window size(width, height)
+            layer (int): layer
+        Returns:
+            :class:`~libcore.vc4.display.Window`: window
+        """
+
         return Window(self, dst, size, layer)
 
     def size(self):
+
+        """
+        Get display size.
+        
+        Returns:
+            ((int, int)):(width,height)
+        """
+
         return (self.info.width, self.info.height)
 
     def close(self):
@@ -199,6 +229,10 @@ class Display(object):
 class Window(object):
 
     def __init__(self, display, dst, size, layer):
+
+        """
+            Double buffered window
+        """
 
         self.display = display
         self.size = size
@@ -246,10 +280,26 @@ class Window(object):
         _bcm_host.vc_dispmanx_update_submit_sync(update)
 
     def clear(self, rgb = (0,0,0)):
+
+        """
+        Clear window
+
+        Args:
+            rgb ((int, int, int)): clear color
+        """
+
         color = b''.join(map(lambda x: x.to_bytes(1, 'little'), rgb))
         self.blit(color*self.size[0]*self.size[1])
 
     def blit(self, image):
+
+        """
+        Blit image to window.
+
+        Args:
+            image(bytes): RGB image with size which size is the same as window size 
+        """
+
         src_rect = VC_RECT_T()
         _bcm_host.vc_dispmanx_rect_set(byref(src_rect), 0, 0, self.size[0], self.size[1])
         pitch = (self.size[0] * 3 + 32 - 1) // 32 * 32
@@ -259,12 +309,18 @@ class Window(object):
             raise RuntimeError("Failed to blit.: {}".format(result))
 
     def update(self):
+
+        """Update window."""
+
         update = _bcm_host.vc_dispmanx_update_start(0)
         _bcm_host.vc_dispmanx_element_change_source(update, self.element, self.resources[0])
         _bcm_host.vc_dispmanx_update_submit_sync(update)
         self.resources.append(self.resources.pop(0))
 
     def close(self):
+
+        """ Close window """
+
         update = _bcm_host.vc_dispmanx_update_start(0)
         _bcm_host.vc_dispmanx_element_remove(update, self.element)
         _bcm_host.vc_dispmanx_update_submit_sync(update)

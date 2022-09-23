@@ -2,6 +2,8 @@ from .tube import Tube
 
 class Producer(Tube):
 
+    """ Producer Job"""
+
     def __init__(self):
         super(Producer, self).__init__()
 

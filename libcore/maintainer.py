@@ -3,6 +3,8 @@ from libcore.job import Job
 
 class Maintainer:
 
+    """libnixcore Application maintainer """
+
     def __init__(self):
         self.running = True
         signal.signal(signal.SIGINT, self._handler)
@@ -21,6 +23,19 @@ class Maintainer:
         self.running = False
 
     def get_settings(self, default_settings):
+        """
+        Get given libnixcore settings.
+
+        Args:
+            default_settings (dict): default settings
+
+        Returns:
+            dict: updated settings
+
+        Notes:
+            Copy default_settings and overwrite it by given libnixcore settings.
+        """
+
         if not isinstance(default_settings, dict):
             raise TypeError("default_settings must be dict.")
         settings = default_settings.copy()
@@ -29,12 +44,20 @@ class Maintainer:
         return settings
 
     def register_task(self, task):
+
+        """
+        Register the application task.
+        
+        Args:
+            task (:class:`~libcore.job.job.Job`): job
+        """
+
         if not issubclass(type(task), Job):
             raise TypeError("type(task) must be a subclass of libcore.job.Job")
         self.tasks.append(task)
 
     def run(self):
-        # start all task
+        """Start application"""
         for task in self.tasks:
             task.start()
 
