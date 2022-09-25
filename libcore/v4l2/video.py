@@ -10,8 +10,9 @@ from ctypes.util import find_library
 
 from libcore.v4l2.control import *
 from libcore.v4l2.types import *
-# from typess import * 
+# from typess import *
 # from control import *
+
 
 class _libv4l2(object):
     def __init__(self):
@@ -79,7 +80,8 @@ class _libv4lconvert(object):
             self.lib.v4lconvert_convert.restype = c_void_p  # struct v4lconvert_data *
 
             # try_format
-            self.lib.v4lconvert_try_format.argtypes = [c_void_p, POINTER(format), POINTER(format)]
+            self.lib.v4lconvert_try_format.argtypes = [
+                c_void_p, POINTER(format), POINTER(format)]
             self.lib.v4lconvert_try_format.restype = c_int
 
     def create(self, *args, **kwargs):
@@ -123,7 +125,11 @@ _IOC_READ = 2
 
 
 def _IOC(dir, type, nr, size):
-    return (dir << _IOC_DIRSHIFT) | (ord(type) << _IOC_TYPESHIFT) | (nr << _IOC_NRSHIFT) | (size << _IOC_SIZESHIFT)
+    return (
+        dir << _IOC_DIRSHIFT) | (
+        ord(type) << _IOC_TYPESHIFT) | (
+            nr << _IOC_NRSHIFT) | (
+                size << _IOC_SIZESHIFT)
 
 
 def _IO(type, nr):
@@ -393,7 +399,12 @@ VideoPort = enum.Enum("VideoPort", "CSI USB")
 
 
 class VideoConfig(object):
-    def __init__(self, width=640, height=480, pixel_format=V4L2_PIX_FMT.RGB24, framerate=30):
+    def __init__(
+            self,
+            width=640,
+            height=480,
+            pixel_format=V4L2_PIX_FMT.RGB24,
+            framerate=30):
         self.pixel_format = pixel_format
         self.width = width
         self.height = height
@@ -433,10 +444,13 @@ class Video(object):
         cap = capability()
         result = self._ioctl(_VIDIOC.QUERYCAP, byref(cap))
         if not (cap.capabilities & _V4L2_CAP_VIDEO_CAPTURE):
-            raise RuntimeError("The device doesn't support the single-planar API through the Video Capture interface.")
+            raise RuntimeError(
+                "The device doesn't support the single-planar API through the Video Capture interface.")
         if not (cap.capabilities & _V4L2_CAP_STREAMING):
-            raise RuntimeError("The device doesn't support the streaming I/O method.")
-        driver = "".join(map(chr, itertools.takewhile(lambda x: x > 0, cap.driver)))
+            raise RuntimeError(
+                "The device doesn't support the streaming I/O method.")
+        driver = "".join(
+            map(chr, itertools.takewhile(lambda x: x > 0, cap.driver)))
         if driver == "bm2835 mmal":
             return VideoPort.CSI
         elif driver[: len("uvcvideo")] == "uvcvideo":
@@ -444,7 +458,13 @@ class Video(object):
         else:
             raise RuntimeError("unknown driver '{}'".format(driver))
 
-    def lookup_config(self, width, height, framerate, pixel_format, expected_format):
+    def lookup_config(
+            self,
+            width,
+            height,
+            framerate,
+            pixel_format,
+            expected_format):
 
         results = []
 
@@ -478,7 +498,10 @@ class Video(object):
                 frmsize.index = j
                 frmsize.pixel_format = fmt.pixelformat
 
-                result = _v4l2.ioctl(self.device_fd, _VIDIOC.ENUM_FRAMESIZES, byref(frmsize))
+                result = _v4l2.ioctl(
+                    self.device_fd,
+                    _VIDIOC.ENUM_FRAMESIZES,
+                    byref(frmsize))
                 if result != 0 and get_errno() == errno.EINVAL:
                     break
                 if result != 0:
@@ -526,7 +549,10 @@ class Video(object):
                     frmival.width = candidate.width
                     frmival.height = candidate.height
 
-                    result = _v4l2.ioctl(self.device_fd, _VIDIOC.ENUM_FRAMEINTERVALS, byref(frmival))
+                    result = _v4l2.ioctl(
+                        self.device_fd,
+                        _VIDIOC.ENUM_FRAMEINTERVALS,
+                        byref(frmival))
                     if result != 0 and get_errno() == errno.EINVAL:
                         break
                     if result != 0:
@@ -539,17 +565,22 @@ class Video(object):
                         else:
                             continue
                     elif frmival.type == V4L2_FRMIVAL_TYPE.CONTINUOUS:
-                        min_rate = frmival.stepwise.max.denominator * 1.0 / frmival.stepwise.max.numerator
-                        max_rate = frmival.stepwise.min.denominator * 1.0 / frmival.stepwise.min.numerator
+                        min_rate = frmival.stepwise.max.denominator * \
+                            1.0 / frmival.stepwise.max.numerator
+                        max_rate = frmival.stepwise.min.denominator * \
+                            1.0 / frmival.stepwise.min.numerator
                         if min_rate <= framerate and framerate <= max_rate:
                             candidate.interval.numerator = 1
                             candidate.interval.denominator = framerate
                         else:
                             continue
                     elif frmival.type == V4L2_FRMIVAL_TYPE.STEPWISE:
-                        min_rate = frmival.stepwise.max.denominator * 1.0 / frmival.stepwise.max.numerator
-                        max_rate = frmival.stepwise.min.denominator * 1.0 / frmival.stepwise.min.numerator
-                        step_rate = frmival.stepwise.step.denominator * 1.0 / frmival.stepwise.step.numerator
+                        min_rate = frmival.stepwise.max.denominator * \
+                            1.0 / frmival.stepwise.max.numerator
+                        max_rate = frmival.stepwise.min.denominator * \
+                            1.0 / frmival.stepwise.min.numerator
+                        step_rate = frmival.stepwise.step.denominator * \
+                            1.0 / frmival.stepwise.step.numerator
                         if min_rate <= framerate and framerate <= max_rate:
                             s = 0
                             while True:
@@ -591,7 +622,12 @@ class Video(object):
 
         return results
 
-    def try_convert(self, conf, expected_width, expected_height, expected_format):
+    def try_convert(
+            self,
+            conf,
+            expected_width,
+            expected_height,
+            expected_format):
 
         fmt = format()
         fmt.type = V4L2_BUF_TYPE.VIDEO_CAPTURE
@@ -607,7 +643,8 @@ class Video(object):
         expected_fmt.fmt.pix.pixelformat = expected_format
         expected_fmt.fmt.pix.field = V4L2_FIELD.INTERLACED
 
-        result = _v4lconvert.try_format(self.converter, byref(expected_fmt), byref(fmt))
+        result = _v4lconvert.try_format(
+            self.converter, byref(expected_fmt), byref(fmt))
         if -1 == result:
             raise RuntimeError("incompatible format")
 
@@ -623,7 +660,12 @@ class Video(object):
         else:
             return None
 
-    def set_format(self, conf, expected_width=None, expected_height=None, expected_format=None):
+    def set_format(
+            self,
+            conf,
+            expected_width=None,
+            expected_height=None,
+            expected_format=None):
 
         if expected_width is None:
             expected_width = conf.width
@@ -632,9 +674,14 @@ class Video(object):
         if expected_format is None:
             expected_format = conf.pixel_format
 
-        fmts = self.try_convert(conf, expected_width, expected_height, expected_format)
+        fmts = self.try_convert(
+            conf,
+            expected_width,
+            expected_height,
+            expected_format)
         if fmts is None:
-            fmts = self.try_convert(conf, conf.width, conf.height, expected_format)
+            fmts = self.try_convert(
+                conf, conf.width, conf.height, expected_format)
             if fmts is None:
                 raise RuntimeError("incompatible format")
 
@@ -728,7 +775,7 @@ class Video(object):
     def set_vertical_flip(self, flip):
         """
         Flip video (vertical) if it supported.
-        
+
         Args:
             flip (boolean): enable flip
         Returns:
@@ -819,7 +866,8 @@ class Video(object):
 
         result = self._ioctl(_VIDIOC.REQBUFS, byref(req))
         if -1 == result:
-            raise RuntimeError("ioctl(VIDIOC_REQBUFS): {}".format(errno.errorcode[get_errno()]))
+            raise RuntimeError("ioctl(VIDIOC_REQBUFS): {}".format(
+                errno.errorcode[get_errno()]))
 
         self.buffers = [VideoBuffer(self, i) for i in range(n)]
 
@@ -827,14 +875,16 @@ class Video(object):
         for video_buf in self.buffers:
             result = self._ioctl(_VIDIOC.QBUF, byref(video_buf.buf))
             if -1 == result:
-                raise RuntimeError("ioctl(VIDIOC_QBUF): {}".format(errno.errorcode[get_errno()]))
+                raise RuntimeError("ioctl(VIDIOC_QBUF): {}".format(
+                    errno.errorcode[get_errno()]))
 
     def start_streaming(self):
 
         cap = c_int(V4L2_BUF_TYPE.VIDEO_CAPTURE)
         result = self._ioctl(_VIDIOC.STREAMON, byref(cap))
         if -1 == result:
-            raise RuntimeError("ioctl(VIDIOC_STREAMON): {}".format(errno.errorcode[get_errno()]))
+            raise RuntimeError("ioctl(VIDIOC_STREAMON): {}".format(
+                errno.errorcode[get_errno()]))
 
         return VideoStream(self)
 
@@ -843,7 +893,8 @@ class Video(object):
         cap = c_int(V4L2_BUF_TYPE.VIDEO_CAPTURE)
         result = self._ioctl(_VIDIOC.STREAMOFF, byref(cap))
         if -1 == result:
-            raise RuntimeError("ioctl(VIDIOC_STREAMON): {}".format(errno.errorcode[get_errno()]))
+            raise RuntimeError("ioctl(VIDIOC_STREAMON): {}".format(
+                errno.errorcode[get_errno()]))
 
         return True
 
@@ -855,7 +906,8 @@ class Video(object):
             def fileno(self):
                 return self.fd
 
-        rlist, _, _ = select.select([FDWrapper(self.device_fd)], [], [], timeout)
+        rlist, _, _ = select.select(
+            [FDWrapper(self.device_fd)], [], [], timeout)
         if len(rlist) == 0:
             raise RuntimeError("Capture timeout")
 
@@ -864,7 +916,8 @@ class Video(object):
         buf.memory = V4L2_MEMORY.MMAP
         result = self._ioctl(_VIDIOC.DQBUF, byref(buf))
         if -1 == result:
-            raise RuntimeError("ioctl(VIDIOC_DQBUF): {}".format(errno.errorcode[get_errno()]))
+            raise RuntimeError("ioctl(VIDIOC_DQBUF): {}".format(
+                errno.errorcode[get_errno()]))
 
         return self.buffers[buf.index]
 
@@ -872,7 +925,8 @@ class Video(object):
 
         result = self._ioctl(_VIDIOC.QBUF, byref(video_buf.buf))
         if -1 == result:
-            raise RuntimeError("ioctl(VIDIOC_QBUF): {}".format(errno.errorcode[get_errno()]))
+            raise RuntimeError("ioctl(VIDIOC_QBUF): {}".format(
+                errno.errorcode[get_errno()]))
 
 
 class VideoStream(object):
@@ -921,7 +975,8 @@ class VideoBuffer(object):
         set_errno(0)
         result = video._ioctl(_VIDIOC.QUERYBUF, byref(buf))
         if -1 == result:
-            raise RuntimeError("ioctl(VIDIOC_QYERYBUF): {}".format(errno.errorcode[get_errno()]))
+            raise RuntimeError("ioctl(VIDIOC_QYERYBUF): {}".format(
+                errno.errorcode[get_errno()]))
 
         result = _v4l2.mmap(
             None,
@@ -932,7 +987,8 @@ class VideoBuffer(object):
             buf.m.offset,
         )
         if result == -1:
-            raise RuntimeError("mmap failed: {}".format(errno.errorcode[get_errno()]))
+            raise RuntimeError("mmap failed: {}".format(
+                errno.errorcode[get_errno()]))
 
         self.video = video
         self.buf = buf
@@ -943,7 +999,8 @@ class VideoBuffer(object):
             return
         result = _v4l2.munmap(self.mapped_buf, self.buf.length)
         if result == -1:
-            raise RuntimeError("munmap failed: {}".format(errno.errorcode[get_errno()]))
+            raise RuntimeError("munmap failed: {}".format(
+                errno.errorcode[get_errno()]))
         self.mapped_buf = None
 
 
@@ -1000,8 +1057,10 @@ if __name__ == '__main__':
         width = (width + 31) // 32 * 32
         height = (height + 15) // 16 * 16
 
-        # workaround for bcm2835-v4l2 IMX219 32x32 -> 800x800 capture timeout bug
-        candidates = video.lookup_config(64, 64, 5, V4L2_PIX_FMT.RGB24, V4L2_PIX_FMT.RGB24)
+        # workaround for bcm2835-v4l2 IMX219 32x32 -> 800x800 capture timeout
+        # bug
+        candidates = video.lookup_config(
+            64, 64, 5, V4L2_PIX_FMT.RGB24, V4L2_PIX_FMT.RGB24)
         video.set_format(candidates[0], 64, 64, V4L2_PIX_FMT.RGB24)
 
     if format_selector in [FormatSelector.PROPER, FormatSelector.MAXIMUM]:
@@ -1023,17 +1082,23 @@ if __name__ == '__main__':
     fmts = [expected_format] + [f for f in fallback_formats]
     for fmt in fmts:
         expected_framerate = 1 if format_selector == FormatSelector.MAXIMUM else framerate
-        candidates = video.lookup_config(width, height, expected_framerate, fmt, expected_format)
+        candidates = video.lookup_config(
+            width, height, expected_framerate, fmt, expected_format)
         candidates = sorted(candidates, key=cmp)
         if len(candidates) > 0:
-            config = candidates[-1 if format_selector == FormatSelector.MAXIMUM else 0]
+            config = candidates[-1 if format_selector ==
+                                FormatSelector.MAXIMUM else 0]
             break
     if config is None:
         raise RuntimeError("expected capture format is unsupported")
     if format_selector == FormatSelector.MAXIMUM:
         fmt = video.set_format(config, expected_format=expected_format)
     else:
-        fmt = video.set_format(config, width, height, expected_format=expected_format)
+        fmt = video.set_format(
+            config,
+            width,
+            height,
+            expected_format=expected_format)
     capture_width, capture_height, capture_format = fmt
     # TODO: v3.0.0. Comment out.
     # assert type(self.capture_format) is V4L2_PIX_FMT
@@ -1045,7 +1110,10 @@ if __name__ == '__main__':
         try:
             for i in range(5):
                 dat = stream.capture()
-                img = Image.fromarray(np.frombuffer(dat, dtype=np.uint8).reshape(480,640,3))
+                img = Image.fromarray(
+                    np.frombuffer(
+                        dat, dtype=np.uint8).reshape(
+                        480, 640, 3))
                 img.save('{:03d}.png'.format(i))
-        except:
+        except BaseException:
             print(traceback.format_exc)()

@@ -10,10 +10,11 @@ from libcore import _version
 
 __version__ = _version.__version__
 
+
 def notify(notification, *args, **kwargs):
     """
     Make a notification to the user
-    
+
     Args:
         notification(list or dict): dicts must be encodable to JSON.
     Example:
@@ -26,12 +27,16 @@ def notify(notification, *args, **kwargs):
     kwargs['flush'] = True
     print(json.dumps(notification), *args, **kwargs)
 
+
 _default_heartbeat_file = Path('/home/cybercore-pi/heartbeat')
+
 
 def _default_heartbeat(*args, **kwargs):
     _default_heartbeat_file.touch()
 
+
 _heartbeat_function = _default_heartbeat
+
 
 def set_heartbeat_function(f):
     """
@@ -51,6 +56,7 @@ def set_heartbeat_function(f):
     global _heartbeat_function
     _heartbeat_function = f
 
+
 def heartbeat(*args, **kwargs):
     """
     Execute heartbeat action.
@@ -58,4 +64,4 @@ def heartbeat(*args, **kwargs):
     Notes:
         Defalut action is 'touch /home/cybercore-pi/heartbeat'
     """
-    _heartbeat_function(*args, **kwargs) 
+    _heartbeat_function(*args, **kwargs)

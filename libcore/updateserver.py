@@ -1,9 +1,13 @@
 # import io, os, socket, threading, base64
 # from PIL import Image
-import io, os, socket, base64 
+import io
+import os
+import socket
+import base64
 from threading import Lock
 import traceback
 from .job import Isolated
+
 
 def _read_tokens(conn, n):
     result = []
@@ -19,19 +23,20 @@ def _read_tokens(conn, n):
             s += c
     return result
 
+
 def _read_bytes(conn, n):
     result = b''
     while len(result) < n:
         result += conn.recv(1024)
     return result
 
+
 class UpdateServer(Isolated):
 
     def __init__(self, sock_path='/tmp/uds_socket.s'):
-
-        """libnixcore Update Server 
+        """libnixcore Update Server
             This server handles these commands
-        
+
             * 'Take Photo'
             * responses cached image as png data
         """
@@ -53,7 +58,7 @@ class UpdateServer(Isolated):
         try:
             os.unlink(self.sock_path)
         except FileNotFoundError as e:
-            pass # ignore
+            pass  # ignore
         s.bind(self.sock_path)
         s.settimeout(1)
         s.listen(1)
@@ -67,15 +72,23 @@ class UpdateServer(Isolated):
                         break
             try:
                 conn, addr = s.accept()
-                [request_id, command_id, command_data_length] = map(int, _read_tokens(conn, 3))
+                [request_id, command_id, command_data_length] = map(
+                    int, _read_tokens(conn, 3))
                 command_data = _read_bytes(conn, command_data_length)
-                if command_id == 0: # Take Photo
+                if command_id == 0:  # Take Photo
                     header = "data:image/png;base64,"
                     with self.img_lock:
                         pngimg = io.BytesIO()
                         self.img.save(pngimg, format='PNG')
                         b64img = base64.b64encode(pngimg.getbuffer())
-                    conn.sendall("{} {} {} {}{}\n".format(request_id, 0, len(header)+len(b64img), header, b64img.decode('utf-8')).encode('utf-8'))
+                    conn.sendall(
+                        "{} {} {} {}{}\n".format(
+                            request_id,
+                            0,
+                            len(header) +
+                            len(b64img),
+                            header,
+                            b64img.decode('utf-8')).encode('utf-8'))
                 else:
                     conn.sendall("{} 2 0\n".format(request_id))
                 conn.close()

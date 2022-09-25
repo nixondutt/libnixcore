@@ -1,8 +1,9 @@
 import io
-import enum 
+import enum
 from queue import Full
 from .job import Producer
 from libcore.v4l2.video import Video, V4L2_PIX_FMT, VideoPort
+
 
 class Frame(object):
 
@@ -13,7 +14,6 @@ class Frame(object):
         self.updatable = True
 
     def getvalue(self):
-
         """
         Get frame data.
 
@@ -30,15 +30,25 @@ class Frame(object):
             return True
         return False
 
+
 class V4LCameraCapture(Producer):
 
     """Captured Frame Producer for Video4Linux"""
 
     FormatSelector = enum.Enum("FormatSelector", "DEFAULT PROPER MAXIMUM")
-    def __init__(self, device = '/dev/video0', size = (640, 480), framerate = 30,
-                 expected_format = V4L2_PIX_FMT.RGB24, fallback_formats = (V4L2_PIX_FMT.YUYV,V4L2_PIX_FMT.MJPEG),
-                 format_selector= FormatSelector.DEFAULT):
 
+    def __init__(
+            self,
+            device='/dev/video0',
+            size=(
+                640,
+                480),
+            framerate=30,
+            expected_format=V4L2_PIX_FMT.RGB24,
+            fallback_formats=(
+                V4L2_PIX_FMT.YUYV,
+                V4L2_PIX_FMT.MJPEG),
+            format_selector=FormatSelector.DEFAULT):
         """
         Args:
             device (str): v4l device path
@@ -56,14 +66,18 @@ class V4LCameraCapture(Producer):
         width, height = size
         if self.video.query_capability() == VideoPort.CSI:
             # workaround for bcm2835-v4l2 format pixsize & bytesperline bug
-            width = (width+31) // 32 * 32
-            height = (height +15) // 16 * 16
-            
-            #workaround for bcm2835-v4l2 IMX219 32*32 -> 800*800 capture timeout bug
-            candidates = self.video.lookup_config(64,64,5, V4L2_PIX_FMT.RGB24, V4L2_PIX_FMT.RGB24)
-            self.video.set_format(candidates[0],64,64,V4L2_PIX_FMT.RGB24)
-        
-        if format_selector in [V4LCameraCapture.FormatSelector.PROPER, V4LCameraCapture.FormatSelector.MAXIMUM]:
+            width = (width + 31) // 32 * 32
+            height = (height + 15) // 16 * 16
+
+            # workaround for bcm2835-v4l2 IMX219 32*32 -> 800*800 capture
+            # timeout bug
+            candidates = self.video.lookup_config(
+                64, 64, 5, V4L2_PIX_FMT.RGB24, V4L2_PIX_FMT.RGB24)
+            self.video.set_format(candidates[0], 64, 64, V4L2_PIX_FMT.RGB24)
+
+        if format_selector in [
+                V4LCameraCapture.FormatSelector.PROPER,
+                V4LCameraCapture.FormatSelector.MAXIMUM]:
 
             def cmp(config):  # type: ignore
                 return (
@@ -75,22 +89,26 @@ class V4LCameraCapture(Producer):
         else:
             def cmp(config):
                 return 1
-        
-        config =None
+
+        config = None
         fmts = [expected_format] + [f for f in fallback_formats]
         for fmt in fmts:
             expected_framerate = 1 if format_selector == V4LCameraCapture.FormatSelector.MAXIMUM else framerate
-            candidates = self.video.lookup_config(width, height, expected_framerate, fmt, expected_format)
+            candidates = self.video.lookup_config(
+                width, height, expected_framerate, fmt, expected_format)
             candidates = sorted(candidates, key=cmp)
             if len(candidates) > 0:
-                config = candidates[-1 if format_selector == V4LCameraCapture.FormatSelector.MAXIMUM else 0]
+                config = candidates[-1 if format_selector ==
+                                    V4LCameraCapture.FormatSelector.MAXIMUM else 0]
                 break
         if config is None:
             raise RuntimeError("expected capture format is unsupported")
         if format_selector == V4LCameraCapture.FormatSelector.MAXIMUM:
-            fmt = self.video.set_format(config, expected_format= expected_format)
+            fmt = self.video.set_format(
+                config, expected_format=expected_format)
         else:
-            fmt = self.video.set_format(config, width, height, expected_format=expected_format)
+            fmt = self.video.set_format(
+                config, width, height, expected_format=expected_format)
         self.capture_width, self.capture_height, self.capture_format = fmt
         self.video.set_framerate(config)
         self.video.request_buffers(4)
@@ -120,15 +138,13 @@ class V4LCameraCapture(Producer):
         """
         return configurator(self.video)
 
-
     def run(self):
-
         """Run producer activity"""
 
         with self.video.start_streaming() as stream:
             while self._is_running():
                 try:
-                    value = stream.capture(timeout = 5)
+                    value = stream.capture(timeout=5)
                     updated = 0
                     for frame in reversed(self.frames):
                         if frame._update(value):
@@ -139,9 +155,9 @@ class V4LCameraCapture(Producer):
                     frame = Frame(value)
                     if self._outlet(frame):
                         self.frames.append(frame)
-                except:
+                except BaseException:
                     raise
-                    
+
         self.video.close()
 
     def _outlet(self, o):
@@ -153,6 +169,6 @@ class V4LCameraCapture(Producer):
                 return True
             except Full:
                 return False
-            except:
+            except BaseException:
                 traceback.print_exc()
         return False

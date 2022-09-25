@@ -1,5 +1,9 @@
-import os, signal, time, json
-from libcore.job import Job 
+import os
+import signal
+import time
+import json
+from libcore.job import Job
+
 
 class Maintainer:
 
@@ -18,8 +22,8 @@ class Maintainer:
                     self.settings = json.load(f)
             except FileNotFoundError:
                 pass
-    
-    def _handler(self,sig, frame):
+
+    def _handler(self, sig, frame):
         self.running = False
 
     def get_settings(self, default_settings):
@@ -44,10 +48,9 @@ class Maintainer:
         return settings
 
     def register_task(self, task):
-
         """
         Register the application task.
-        
+
         Args:
             task (:class:`~libcore.job.job.Job`): job
         """
@@ -66,7 +69,7 @@ class Maintainer:
                 time.sleep(1)
         except KeyboardInterrupt:
             pass
-        except:
+        except BaseException:
             raise
 
         for task in self.tasks:

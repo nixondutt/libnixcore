@@ -2,7 +2,8 @@ from threading import Thread
 from queue import Queue, Empty, Full
 import traceback
 import inspect
-from .job import Job 
+from .job import Job
+
 
 class Tube(Job):
 
@@ -23,7 +24,9 @@ class Tube(Job):
     def _add_in_queue(self, q):
         self.in_queues.append(q)
 
-    def _add_out_queue(self, q):  # if cap connects to conv, then cap.out_queues[queue_obj] and conv.in_queues[queue_obj]
+    # if cap connects to conv, then cap.out_queues[queue_obj] and
+    # conv.in_queues[queue_obj]
+    def _add_out_queue(self, q):
         self.out_queues.append(q)
 
     def _inlet(self):
@@ -38,7 +41,7 @@ class Tube(Job):
                 pass
             except GeneratorExit:
                 break
-            except:
+            except BaseException:
                 traceback.print_exc()
 
     def _outlet(self, o):
@@ -50,12 +53,11 @@ class Tube(Job):
                 return True
             except Full:
                 pass
-            except:
+            except BaseException:
                 traceback.print_exc()
         return False
 
     def run(self):
-
         """Run activity"""
 
         for i in self._inlet():
@@ -74,16 +76,14 @@ class Tube(Job):
         raise NotImplementedError("'proc' must be overridden.")
 
     def stop(self):
-
         """Stop activity"""
 
         self.running = False
 
     def connect(self, follow):
-
         """
         Connect following task.
-        
+
         Args:
             follow (:class:`~libcore.job.job.Job`): following task
         """
