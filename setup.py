@@ -3,7 +3,13 @@ import os
 from sphinx.setup_command import BuildDoc
 cmdclass = {'build_sphinx': BuildDoc}
 
-exec(open(os.path.join(os.path.abspath(os.path.dirname(__file__)),'libcore', '_version.py')).read())
+exec(
+    open(
+        os.path.join(
+            os.path.abspath(
+                os.path.dirname(__file__)),
+            'libcore',
+            '_version.py')).read())
 
 with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
@@ -12,7 +18,7 @@ name = 'libcore'
 author = 'Nixon'
 
 setup(
-    name = name,
+    name=name,
     version=__version__,
     description='Multithread Pipeline',
     long_description=long_description,

@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pillow = "*"
+
+[dev-packages]
+#Document
+sphinx = "*"
+sphinx-theme = "*"
+#Packaging Python Projects
+setuptools = "*"
+wheel = "*"
+twine = "*"
+#Tests 
+nose2 = "*"
+#Lint
+autopep8 = "*"
