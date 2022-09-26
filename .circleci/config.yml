@@ -14,7 +14,8 @@ commands:
 jobs:
   lint:
     docker:
-      -image: python:3-buster
+      - image: python:3-buster
+
     steps:
       - checkout
       - install-python-dev-tools
