@@ -1,4 +1,5 @@
 version: 2.1
+
 commands:
   install-python-dev-tools:
     steps:
@@ -9,10 +10,11 @@ commands:
             apt-get install -y ca-certificates python3-pip
             pip3 install pipenv
             pipenv install --dev -e .
+
 jobs:
   check-pep8:
     docker:
-      -image: python:3-buster
+      - image: python:3-buster
     steps:
       - checkout
       - install-python-dev-tools
