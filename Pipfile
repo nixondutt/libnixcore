@@ -18,3 +18,4 @@ twine = "*"
 nose2 = "*"
 #Lint
 autopep8 = "*"
+libcore = {editable = true, path = "."}
