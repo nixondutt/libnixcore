@@ -10,7 +10,7 @@ commands:
             pip3 install pipenv
             pipenv install --dev -e .
 jobs:
-  check-pep8:
+  lint:
     docker:
       -image: python:3-buster
     steps:
@@ -55,5 +55,5 @@ workflows:
   version: 2
   commit:
     jobs:
-      - check-pep8
+      - lint
       - build-wheel
