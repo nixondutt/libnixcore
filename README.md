@@ -1,7 +1,7 @@
 # Work in Progress
 
-# A framework for end to end application development on Edge Devices
+# A multithreaded framework for end to end application development 
 
-## to do 
-    - test modules 
-    - check code format
+## Framework Design 
+<img src="./assets/libcore.png"> 
+    

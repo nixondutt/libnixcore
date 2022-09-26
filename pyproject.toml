@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61.0","sphinx"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "libcore"
+version = "1.0.0"
+authors = [
+  { name="Nixon Dutta", email="nixondutta402@gmail.com" },
+]
+description = "A multithreaed end to end application framework"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+]
+[project.urls]
+"Homepage" = "https://github.com/nixondutt/libnixcore"

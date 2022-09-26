@@ -1,17 +1,33 @@
 version: 2.1
-jobs:
-  build-wheel:
-    docker:
-      - image: ubuntu:18.04
+
+commands:
+  install-python-dev-tools:
     steps:
-      - checkout
       - run:
           name: Install python dev tools
           command: |
             apt-get update
-            apt-get install -y ca-certificates python3-wheel python3-setuptools python3-pip
-            pip3 install sphinx
-            pip3 install sphinx_theme
+            apt-get install -y ca-certificates python3-pip
+            pip3 install pipenv
+            pipenv install --dev -e .
+jobs:
+  check-pep8:
+    docker:
+      -image: python:3-buster
+    steps:
+      - checkout
+      - install-python-dev-tools
+      - run:
+          name: Check code format
+          command: |
+            [ $(pipenv run autopep8 --diff --max-line-length 128 -r . | wc -l) = 0 ]
+
+  build-wheel:
+    docker:
+      - image: python:3-buster
+    steps:
+      - checkout
+      - install-python-dev-tools
       - run:
           name: Make wheel
           command: |
