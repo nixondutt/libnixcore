@@ -1,5 +1,4 @@
 version: 2.1
-
 commands:
   install-python-dev-tools:
     steps:
@@ -56,4 +55,5 @@ workflows:
   version: 2
   commit:
     jobs:
+      - check-pep8
       - build-wheel
