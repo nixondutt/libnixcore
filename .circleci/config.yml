@@ -31,7 +31,7 @@ jobs:
       - run:
           name: Make wheel
           command: |
-            python3 setup.py bdist_wheel
+            pipenv run python setup.py bdist_wheel
       - run:
           name: Put artifacts
           command: |
@@ -43,7 +43,7 @@ jobs:
       - run:
           name: Documentation
           command: |
-            sphinx-build docs build/sphinx/html
+            pipenv run sphinx-build docs build/sphinx/html
             tar cvjf build/sphinx/html.tar.bz2 -C build/sphinx html
       - store_artifacts:
           path: build/sphinx/html
@@ -56,4 +56,5 @@ workflows:
   version: 2
   commit:
     jobs:
+      - check-pep8
       - build-wheel
