@@ -47,9 +47,9 @@ class Maintainer:
             settings.update(self.settings)
         return settings
 
-    def register_task(self, task):
+    def subscribe(self, task):
         """
-        Register the application task.
+        Subscribe to the maintainer
 
         Args:
             task (:class:`~libcore.job.job.Job`): job

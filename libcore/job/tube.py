@@ -24,7 +24,7 @@ class Tube(Job):
     def _add_in_queue(self, q):
         self.in_queues.append(q)
 
-    # if cap connects to conv, then cap.out_queues[queue_obj] and
+    # if cap links to conv, then cap.out_queues[queue_obj] and
     # conv.in_queues[queue_obj]
     def _add_out_queue(self, q):
         self.out_queues.append(q)
@@ -80,9 +80,9 @@ class Tube(Job):
 
         self.running = False
 
-    def connect(self, follow):
+    def link(self, follow):
         """
-        Connect following task.
+        link following task.
 
         Args:
             follow (:class:`~libcore.job.job.Job`): following task

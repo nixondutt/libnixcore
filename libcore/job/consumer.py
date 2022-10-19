@@ -22,7 +22,7 @@ class Consumer(Tube):
             if not self._is_running:
                 break
 
-    def connect(self, follow):
+    def link(self, follow):
         """
         Raises error
 
